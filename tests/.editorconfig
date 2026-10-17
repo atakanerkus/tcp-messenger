@@ -1,0 +1,11 @@
+# Overrides for test code. Inherits everything else from the repository root.
+[*.cs]
+
+# Test folders are lower-case by convention (unit/, integration/, e2e/) while namespaces stay PascalCase.
+dotnet_diagnostic.IDE0130.severity = none
+
+# Test method names use underscores to separate Scenario_Condition_Expectation.
+dotnet_diagnostic.CA1707.severity = none
+
+# Test classes are instantiated by the runner; "make static" hints are noise here.
+dotnet_diagnostic.CA1812.severity = none
