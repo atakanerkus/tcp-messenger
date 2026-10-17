@@ -56,8 +56,10 @@ public sealed class TcpTransportTests : IAsyncLifetime
 
         Assert.True(client.IsOpen);
         Assert.True(serverSide.IsOpen);
-        Assert.NotNull(client.RemoteEndPoint);
-        Assert.Equal(_server.LocalEndPoint!.Port, ((IPEndPoint)client.RemoteEndPoint!).Port);
+        var remote = Assert.IsType<IPEndPoint>(client.RemoteEndPoint);
+        Assert.Equal(_server.LocalEndPoint!.Port, remote.Port);
+        Assert.Equal(IPAddress.Loopback, remote.Address); // plain IPv4, not "[::ffff:127.0.0.1]"
+        Assert.Equal(IPAddress.Loopback, Assert.IsType<IPEndPoint>(serverSide.RemoteEndPoint).Address);
     }
 
     [Fact]

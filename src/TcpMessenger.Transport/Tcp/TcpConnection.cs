@@ -26,7 +26,7 @@ public sealed class TcpConnection : IConnection
         _client = client;
         _client.NoDelay = true;
         _stream = client.GetStream();
-        RemoteEndPoint = client.Client.RemoteEndPoint;
+        RemoteEndPoint = NormalizeEndPoint(client.Client.RemoteEndPoint);
     }
 
     /// <inheritdoc />
@@ -129,6 +129,15 @@ public sealed class TcpConnection : IConnection
             await CloseCoreAsync(error).ConfigureAwait(false);
         }
     }
+
+    /// <summary>
+    /// A dual-stack client socket reports IPv4 peers as IPv4-mapped IPv6 addresses ("[::ffff:127.0.0.1]");
+    /// show them the way users typed them.
+    /// </summary>
+    private static EndPoint? NormalizeEndPoint(EndPoint? endPoint) =>
+        endPoint is IPEndPoint { Address.IsIPv4MappedToIPv6: true } ip
+            ? new IPEndPoint(ip.Address.MapToIPv4(), ip.Port)
+            : endPoint;
 
     private Task CloseCoreAsync(Exception? error)
     {

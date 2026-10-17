@@ -51,3 +51,18 @@ Görev tanımının açık bıraktığı ya da birden fazla şekilde yorumlanabi
 
 **Karar:** `Protocol` ve `Transport` bağımsız; `Core` ikisini orkestre eder; `App` yalnızca `Core`'a bağlıdır. Her projede arayüzler `Abstractions/` klasöründe toplanır; üst katmanlar ve test sahteleri yalnızca arayüzlere bağımlıdır.
 **Gerekçe:** Soketsiz unit test (Protocol, Core), gerçek loopback ile dar kapsamlı integration test (Transport) ve gerçek arayüzle e2e test (App) birbirinden bağımsız yazılabilir.
+
+## K11 — Arayüz doğrulaması protokol doğrulayıcısını yeniden kullanır
+
+**Karar:** Mesaj editörleri alan kurallarını kendileri tanımlamaz; her değişiklikte mesajı kurup `IMessageValidator`'a verir ve dönen alan hatalarını `INotifyDataErrorInfo` ile gösterir.
+**Gerekçe:** Aralık kuralları tek yerde yaşar; arayüz ile tel formatı birbirinden farklı bir şey kabul edemez. Görev tablosundaki bir aralık değişirse yalnızca `FieldConstraints` güncellenir.
+
+## K12 — Otomatik cevap ve periyodik gönderim formdaki güncel değerleri kullanır
+
+**Karar:** Uygulamanın kendi başlattığı gönderimler (`AutoReply`, `PeriodicSender`) içeriği `IOutgoingMessageProvider` üzerinden alır; arayüz katmanı bunu o anki form değerleriyle uygular. Form geçersizse gönderim yapılmaz ve kullanıcı uyarılır.
+**Gerekçe:** Kullanıcı periyodik gönderim sürerken bir alanı değiştirdiğinde yeni değer hemen tele yansır; Core katmanı arayüzden habersiz kalır.
+
+## K13 — Fire-and-forget sınırlarında tüm istisnalar yakalanır
+
+**Karar:** Zamanlayıcı tikleri ve otomatik cevaplar gibi beklenmeyen (`await` edilmeyen) görevlerde her istisna yakalanır ve kullanıcıya uyarı olarak iletilir; periyodik gönderimde ilgili zamanlama durdurulur.
+**Gerekçe:** Gözlemlenmeyen bir görev istisnası sessizce kaybolur ya da süreci düşürür; canlı demoda ikisi de kabul edilemez. Senkron çağrı yollarında (ör. `SendAsync`) istisnalar normal şekilde yayılır ve komut katmanında gösterilir.

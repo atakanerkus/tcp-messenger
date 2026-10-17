@@ -1,30 +1,45 @@
 # Demo Senaryosu
 
-> Taslak. Uygulama tamamlandığında (Faz 6) adımlar ekran görüntüleri ve anlatım notlarıyla netleştirilecektir.
+Sunumda uygulama aynı laptopta iki kez çalıştırılır: biri **Server**, biri **Client**. Aşağıdaki akış görev tanımındaki her maddeyi sırayla gösterir. Tahmini süre: 8–10 dakika.
 
-## Hazırlık
+## Hazırlık (sunumdan önce)
 
-1. Laptopta `dotnet build TcpMessenger.slnx -c Release` çalıştırılır; tüm test kategorileri bir kez koşturulur.
-2. Uygulama iki kez başlatılır:
-   - Instance A: `TcpMessenger.App.exe --mode server --port 5000`
-   - Instance B: `TcpMessenger.App.exe --mode client --host 127.0.0.1 --port 5000 --autoreply off`
-3. Pencereler yan yana yerleştirilir.
+1. `dotnet build TcpMessenger.slnx -c Release` ve üç test kategorisi bir kez koşturulur:
+   ```bash
+   dotnet test --filter Category=Unit
+   dotnet test --filter Category=Integration
+   dotnet test --filter Category=E2E
+   ```
+2. Yedek olarak runtime bağımsız exe üretilir (ağ veya SDK sorununa karşı):
+   ```bash
+   dotnet publish src/TcpMessenger.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
+   ```
+3. İki instance komut satırından, form önceden doldurulmuş hâlde açılır:
+   ```bash
+   src/TcpMessenger.App/bin/Release/net10.0-windows/TcpMessenger.App.exe --mode server --port 5000 --autoreply on
+   src/TcpMessenger.App/bin/Release/net10.0-windows/TcpMessenger.App.exe --mode client --host 127.0.0.1 --port 5000 --autoreply off
+   ```
+   Pencere başlıkları "TCP Messenger — Server" ve "TCP Messenger — Client" olarak ayrışır; yan yana yerleştirilir.
 
 ## Akış
 
-| Adım | Gereksinim maddesi | Gösterilecek |
-|---|---|---|
-| 1 | Server / client modu | A'da Başlat, B'de Bağlan; iki tarafta da durum "Bağlı" |
-| 2 | Alan girişi ve gönderim | B'de Mesaj 1 alanları doldurulur, Gönder |
-| 3 | Trafik listesi | B'de `Transmit Mesaj 1`, A'da `Receive Mesaj 1` satırı, zaman damgalı |
-| 4 | Otomatik cevap | A otomatik olarak Mesaj 2 gönderir; B'de `Receive Mesaj 2` |
-| 5 | İçerik görüntüleme | A'da gelen satır seçilir, alanlar ve ham hex görünür |
-| 6 | Tanımsız mesaj | Üçüncü bir araçtan rastgele bayt gönderilir; A'da uyarı banner'ı ve kırmızı satır |
-| 7 | Periyodik gönderim | B'de Mesaj 1 için 100 ms, Mesaj 2 için 500 ms açılır; iki tarafta akan log |
-| 8 | Doğrulama | B'de aralık dışı değer girilir; alan kırmızı, Gönder pasif |
+| # | Gereksinim | Adım | Beklenen |
+|---|---|---|---|
+| 1 | Server veya client olarak çalışma | Server'da **Başlat**; Client'ta **Bağlan** | Server durum satırı "Dinleniyor: port 5000" → "Bağlı: 127.0.0.1:…"; Client "Bağlı: 127.0.0.1:5000" |
+| 2 | Alanların girilip gönderilmesi | Client'ta Mesaj 1 sekmesi: Ad "Zeynep", Soyad "Kaya", Rütbe "Asteğmen", **Gönder** | Client listesinde `Transmit Mesaj 1` |
+| 3 | Zaman + yön + mesaj adı ile liste | Server listesine bakılır | `Receive Mesaj 1`, zaman damgası ms hassasiyetinde |
+| 4 | Otomatik cevap | Server otomatik olarak Mesaj 2 gönderir | Server: `Transmit Mesaj 2`; Client: `Receive Mesaj 2` |
+| 5 | Seçilen mesajın içeriği | Server'da `Receive Mesaj 1` satırı seçilir | Alt panelde alan tablosu (Adı = Zeynep …) ve ham hex dökümü (`00 00 00 01 …`, 64 byte) |
+| 6 | Tanımsız mesaj uyarısı | Üçüncü bir araçtan ham bayt gönderilir, ör. PowerShell: `$c=New-Object Net.Sockets.TcpClient('127.0.0.1',5000); $s=$c.GetStream(); $b=[Text.Encoding]::ASCII.GetBytes('HELLO'); $s.Write($b,0,$b.Length)` (önce Client durdurulur, server tek bağlantı kabul eder) | Server'da sarı uyarı bandı "Tanımsız mesaj alındı: ID …", listede kırmızı `Receive Tanımsız (…)` satırı |
+| 7 | Periyodik gönderim | Client'ta Mesaj 1 için "Her 100 ms", Mesaj 2 için "Her 500 ms" işaretlenir | İki tarafta akan log; durum çubuğunda sayaçlar artar; işaret kaldırılınca durur |
+| 8 | Doğrulama | Client'ta Birlik Referans No'ya `10000` yazılır | Alan kırmızı çerçeveli, ipucu aralığı gösterir, **Gönder** pasif; `9999` yazılınca aktif |
+| 9 | Bağlantı kopması | Server'da **Durdur** | Client'ta "Bağlantı karşı tarafça kapatıldı." uyarısı, durum "Bağlı değil"; Server tekrar başlatılabilir |
 
 ## Anlatım notları
 
-- Gereksinimdeki otomatik cevap döngüsü (K4) ve neden anahtarla çözüldüğü.
-- Test piramidi: Protocol unit testleri (sınır değerleri), Transport loopback integration testleri, FlaUI e2e testleri.
-- Katman sınırları ve `Abstractions/` kuralı; Core'un soketsiz test edilmesi.
+- **Gereksinimdeki boşluk (K4):** otomatik cevap iki tarafta da açıkken tek bir mesaj sonsuz Mesaj 1 ↔ Mesaj 2 döngüsü başlatır. Tel üzerinde "bu bir cevaptır" bilgisi yok; bu yüzden anahtar var ve demoda sadece server'da açık. İstenirse canlı gösterilebilir: Client'ta anahtar açılır, bir mesaj gönderilir, log akmaya başlar, anahtar kapatılınca durur. (Integration testi `BothSidesAutoReply_ProducesPingPong_WhichIsWhyTheToggleExists` bunu belgeliyor.)
+- **Katmanlar:** Protocol (saf, soketsiz) · Transport (yalnızca byte) · Core (orkestrasyon, yalnızca arayüzlere bağımlı) · App (ince MVVM). Her projede arayüzler `Abstractions/` altında.
+- **Test piramidi:** 206 unit (sınır değerleri, byte vektörleri, sahte zamanla periyodik gönderim), 25 integration (gerçek loopback TCP, iki tam yığın), 7 e2e (FlaUI ile iki gerçek pencere). CI her push'ta unit + integration koşturur.
+- **Tek doğruluk kaynağı:** Arayüz doğrulaması Protocol'deki `MessageValidator`'ı kullanır; aralık kuralı iki yerde yazılmaz. Alınan mesajlarda aralık dışı değer "tanımsız" sayılmaz, alan bazında işaretlenir (K6).
+- **Framing:** Başlık yok; ID'den sabit uzunluk (64 / 29). Tanımsız ID'de tampon temizlenir ve bir sonraki mesajla toparlanır (FrameParser testleri).
+- **Dayanıklılık:** Uyarılar modal değil (saniyede onlarca mesaj gelebilir), log 5000 kayıtla sınırlı, periyodik gönderimde çakışan tikler atlanır, fire-and-forget sınırlarında tüm istisnalar yakalanıp uyarıya çevrilir.

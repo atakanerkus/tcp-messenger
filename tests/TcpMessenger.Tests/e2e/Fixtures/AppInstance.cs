@@ -13,8 +13,24 @@ internal sealed class AppInstance : IDisposable
 {
     private static readonly TimeSpan WindowTimeout = TimeSpan.FromSeconds(30);
 
+    // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2: the test host must see the same pixel
+    // coordinates as UI Automation, otherwise screenshots of scaled displays are offset/clipped.
+    private static readonly nint PerMonitorAwareV2 = -4;
+
     private readonly Application _application;
     private readonly UIA3Automation _automation;
+
+    static AppInstance()
+    {
+        try
+        {
+            _ = NativeMethods.SetProcessDpiAwarenessContext(PerMonitorAwareV2);
+        }
+        catch (Exception)
+        {
+            // Older Windows or already set by the host: captures may be scaled, tests still work.
+        }
+    }
 
     private AppInstance(Application application, UIA3Automation automation, Window window)
     {
@@ -60,12 +76,16 @@ internal sealed class AppInstance : IDisposable
         }
     }
 
-    /// <summary>Saves a screenshot of the window; handy when a scenario fails.</summary>
+    /// <summary>Brings the window to the front and saves a screenshot of it (docs evidence, failure analysis).</summary>
     public string SaveScreenshot(string name)
     {
         string directory = Path.Combine(AppContext.BaseDirectory, "e2e-screenshots");
         Directory.CreateDirectory(directory);
         string path = Path.Combine(directory, $"{name}.png");
+
+        Window.SetForeground();
+        Thread.Sleep(300); // let the compositor finish before copying the screen region
+
         using var bitmap = Window.Capture();
         bitmap.Save(path);
         return path;
@@ -87,5 +107,12 @@ internal sealed class AppInstance : IDisposable
 
         _application.Dispose();
         _automation.Dispose();
+    }
+
+    private static class NativeMethods
+    {
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        public static extern bool SetProcessDpiAwarenessContext(nint value);
     }
 }
