@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>TcpMessenger.Protocol</RootNamespace>
+    <Description>Message definitions, binary serialization, stream framing and field validation. No I/O.</Description>
+  </PropertyGroup>
+
+</Project>

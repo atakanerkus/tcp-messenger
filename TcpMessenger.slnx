@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+    <File Path=".github/workflows/ci.yml" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/protocol.md" />
+    <File Path="docs/decisions.md" />
+    <File Path="docs/demo-script.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TcpMessenger.Protocol/TcpMessenger.Protocol.csproj" />
+    <Project Path="src/TcpMessenger.Transport/TcpMessenger.Transport.csproj" />
+    <Project Path="src/TcpMessenger.Core/TcpMessenger.Core.csproj" />
+    <Project Path="src/TcpMessenger.App/TcpMessenger.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TcpMessenger.Tests/TcpMessenger.Tests.csproj" />
+  </Folder>
+</Solution>

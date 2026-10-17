@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Shared build settings for every project in the repository. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+
+    <!-- Quality gates: warnings fail the build, analyzers and code style run in CI. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <Product>TcpMessenger</Product>
+    <Authors>Atakan Erkuş</Authors>
+    <Copyright>Copyright © 2026 Atakan Erkuş</Copyright>
+    <NeutralLanguage>tr-TR</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

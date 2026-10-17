@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>TcpMessenger.App</RootNamespace>
+    <AssemblyName>TcpMessenger.App</AssemblyName>
+    <Description>WPF desktop client. Thin MVVM layer over TcpMessenger.Core.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TcpMessenger.Core\TcpMessenger.Core.csproj" />
+  </ItemGroup>
+
+</Project>

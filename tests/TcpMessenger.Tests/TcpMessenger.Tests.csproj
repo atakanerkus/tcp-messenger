@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windows TFM so that e2e/ can drive the WPF application through UI Automation (FlaUI). -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>TcpMessenger.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TcpMessenger.Protocol\TcpMessenger.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\TcpMessenger.Transport\TcpMessenger.Transport.csproj" />
+    <ProjectReference Include="..\..\src\TcpMessenger.Core\TcpMessenger.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

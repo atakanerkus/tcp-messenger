@@ -1,0 +1,12 @@
+# Normalize line endings: text files are stored with LF in the repository,
+# checked out with the platform default (CRLF on Windows).
+* text=auto
+
+*.sh      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+
+*.png     binary
+*.jpg     binary
+*.ico     binary
+*.snk     binary

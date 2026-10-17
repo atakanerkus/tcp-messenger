@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>TcpMessenger.Core</RootNamespace>
+    <Description>Application logic: messenger session, auto-reply, periodic sending and traffic log. UI-agnostic.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TcpMessenger.Protocol\TcpMessenger.Protocol.csproj" />
+    <ProjectReference Include="..\TcpMessenger.Transport\TcpMessenger.Transport.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & test (windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore TcpMessenger.slnx
+
+      - name: Build
+        run: dotnet build TcpMessenger.slnx --configuration Release --no-restore
+
+      # E2E tests drive the real WPF window through UI Automation and need an interactive desktop,
+      # so they run only on a developer machine.
+      - name: Test (unit + integration)
+        run: dotnet test TcpMessenger.slnx --configuration Release --no-build --filter "Category!=E2E" --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore
