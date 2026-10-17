@@ -1,10 +1,8 @@
 using System.Windows;
 
-namespace TcpMessenger.App;
+namespace TcpMessenger.App.Views;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
+/// <summary>Shell window. All behaviour lives in <see cref="ViewModels.MainViewModel"/>.</summary>
 public partial class MainWindow : Window
 {
     public MainWindow()

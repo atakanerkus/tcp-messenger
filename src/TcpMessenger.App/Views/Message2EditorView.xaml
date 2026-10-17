@@ -1,0 +1,96 @@
+<UserControl x:Class="TcpMessenger.App.Views.Message2EditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:TcpMessenger.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:Message2EditorViewModel, IsDesignTimeCreatable=False}">
+
+    <StackPanel Margin="10">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Mesaj ID" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="2" IsReadOnly="True" IsTabStop="False" Foreground="{StaticResource HintBrush}" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="int, 4 byte" Style="{StaticResource FieldHint}" />
+
+            <TextBlock Grid.Row="1" Text="Birlik Referans No" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Text="{Binding UnitReferenceNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     AutomationProperties.AutomationId="M2_UnitReferenceNumber" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="1 … 9999" Style="{StaticResource FieldHint}" />
+
+            <TextBlock Grid.Row="2" Text="Konum Geçerliliği" Style="{StaticResource FieldLabel}" />
+            <CheckBox Grid.Row="2" Grid.Column="1"
+                      Content="Birlik konum bilgisi geçerli"
+                      Margin="0,3"
+                      IsChecked="{Binding IsPositionValid}"
+                      AutomationProperties.AutomationId="M2_IsPositionValid" />
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="byte: 1 True, 0 False" Style="{StaticResource FieldHint}" />
+
+            <TextBlock Grid.Row="3" Text="Enlem" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Text="{Binding Latitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     AutomationProperties.AutomationId="M2_Latitude" />
+            <TextBlock Grid.Row="3" Grid.Column="2" Text="±32 400 000" Style="{StaticResource FieldHint}" />
+
+            <TextBlock Grid.Row="4" Text="Boylam" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Text="{Binding Longitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     AutomationProperties.AutomationId="M2_Longitude" />
+            <TextBlock Grid.Row="4" Grid.Column="2" Text="±64 800 000" Style="{StaticResource FieldHint}" />
+
+            <TextBlock Grid.Row="5" Text="Yükseklik" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Text="{Binding Altitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     AutomationProperties.AutomationId="M2_Altitude" />
+            <TextBlock Grid.Row="5" Grid.Column="2" Text="0 … 10 000" Style="{StaticResource FieldHint}" />
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+            <Button Content="Gönder"
+                    Command="{Binding SendCommand}"
+                    FontWeight="SemiBold"
+                    AutomationProperties.AutomationId="M2_SendButton" />
+            <TextBlock Text="Göndermek için bağlı olmalı ve tüm alanlar geçerli olmalı."
+                       Style="{StaticResource FieldHint}"
+                       TextWrapping="Wrap"
+                       MaxWidth="220" />
+        </StackPanel>
+        <TextBlock Text="{Binding SendError}"
+                   Style="{StaticResource ErrorText}"
+                   Visibility="{Binding SendError, Converter={StaticResource NullToCollapsed}}"
+                   AutomationProperties.AutomationId="M2_SendError" />
+
+        <GroupBox Header="Periyodik gönderim">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Her"
+                              IsChecked="{Binding IsPeriodic}"
+                              AutomationProperties.AutomationId="M2_PeriodicCheckBox" />
+                    <TextBox Width="70" Margin="8,0"
+                             Text="{Binding IntervalMs, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                             AutomationProperties.AutomationId="M2_IntervalMs" />
+                    <TextBlock Text="ms'de bir gönder" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="{Binding IntervalError}"
+                           Style="{StaticResource ErrorText}"
+                           Visibility="{Binding IntervalError, Converter={StaticResource NullToCollapsed}}" />
+            </StackPanel>
+        </GroupBox>
+    </StackPanel>
+</UserControl>

@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Windows TFM so that e2e/ can drive the WPF application through UI Automation (FlaUI). -->
+    <!-- Windows TFM + WPF so that unit/App can test view models and e2e/ can drive the real window (FlaUI). -->
     <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <RootNamespace>TcpMessenger.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -20,10 +21,13 @@
     <ProjectReference Include="..\..\src\TcpMessenger.Protocol\TcpMessenger.Protocol.csproj" />
     <ProjectReference Include="..\..\src\TcpMessenger.Transport\TcpMessenger.Transport.csproj" />
     <ProjectReference Include="..\..\src\TcpMessenger.Core\TcpMessenger.Core.csproj" />
+    <ProjectReference Include="..\..\src\TcpMessenger.App\TcpMessenger.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <!-- The WindowsDesktop SDK does not add System.IO to the implicit usings. -->
+    <Using Include="System.IO" />
   </ItemGroup>
 
 </Project>

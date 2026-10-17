@@ -1,0 +1,81 @@
+<UserControl x:Class="TcpMessenger.App.Views.ConnectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:TcpMessenger.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:ConnectionViewModel, IsDesignTimeCreatable=False}">
+
+    <Border Background="{StaticResource PanelBackgroundBrush}"
+            BorderBrush="{StaticResource PanelBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="12,8">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="Mod:" Style="{StaticResource FieldLabel}" />
+                <RadioButton Content="Server"
+                             GroupName="Mode"
+                             IsChecked="{Binding IsServerMode}"
+                             IsEnabled="{Binding CanEditSettings}"
+                             AutomationProperties.AutomationId="ModeServerRadio" />
+                <RadioButton Content="Client"
+                             GroupName="Mode"
+                             IsChecked="{Binding IsServerMode, Converter={StaticResource InverseBool}}"
+                             IsEnabled="{Binding CanEditSettings}"
+                             AutomationProperties.AutomationId="ModeClientRadio" />
+
+                <TextBlock Text="Sunucu adresi:" Style="{StaticResource FieldLabel}" Margin="16,0,8,0" />
+                <TextBox Width="150"
+                         Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.AutomationId="HostTextBox">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Setter Property="IsEnabled" Value="{Binding CanEditSettings}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsServerMode}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <TextBlock Text="Port:" Style="{StaticResource FieldLabel}" Margin="12,0,8,0" />
+                <TextBox Width="70"
+                         Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                         IsEnabled="{Binding CanEditSettings}"
+                         AutomationProperties.AutomationId="PortTextBox" />
+
+                <Button Margin="16,0,8,0"
+                        Command="{Binding StartCommand}"
+                        AutomationProperties.AutomationId="StartButton">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content" Value="Bağlan" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsServerMode}" Value="True">
+                                    <Setter Property="Content" Value="Başlat" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Durdur"
+                        Command="{Binding StopCommand}"
+                        AutomationProperties.AutomationId="StopButton" />
+
+                <TextBlock Text="{Binding StatusText}"
+                           Style="{StaticResource SectionTitle}"
+                           Margin="12,0,0,0"
+                           AutomationProperties.AutomationId="ConnectionStatusText" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding ErrorText}"
+                       Style="{StaticResource ErrorText}"
+                       Visibility="{Binding ErrorText, Converter={StaticResource NullToCollapsed}}"
+                       AutomationProperties.AutomationId="ConnectionErrorText" />
+        </StackPanel>
+    </Border>
+</UserControl>

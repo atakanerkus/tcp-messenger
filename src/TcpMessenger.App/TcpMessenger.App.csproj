@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TcpMessenger.Core\TcpMessenger.Core.csproj" />
   </ItemGroup>
 
