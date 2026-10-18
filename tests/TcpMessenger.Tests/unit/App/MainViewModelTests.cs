@@ -55,6 +55,34 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
+    public void WarningFlood_WhileTheUiIsBusy_ShowsTheNewestAndCountsAll()
+    {
+        var busyUi = new ManualUiDispatcher();
+        var validator = new MessageValidator();
+        var vm = new MainViewModel(
+            _session,
+            _periodic,
+            busyUi,
+            new ConnectionViewModel(_session, busyUi),
+            new Message1EditorViewModel(_session, _periodic, validator, busyUi),
+            new Message2EditorViewModel(_session, _periodic, validator, busyUi),
+            new TrafficLogViewModel(_session.Log, busyUi),
+            new MessageDetailViewModel());
+        busyUi.RunAll();
+
+        for (int i = 1; i <= 1000; i++)
+        {
+            _session.RaiseWarning(SessionWarningKind.UndefinedMessageReceived, $"Tanımsız mesaj alındı: ID {i}");
+        }
+
+        Assert.Equal(1, busyUi.QueuedCount);
+        busyUi.RunAll();
+
+        Assert.Equal(1000, vm.WarningCount);
+        Assert.Equal("Tanımsız mesaj alındı: ID 1000  (+999 önceki uyarı)", vm.WarningText);
+    }
+
+    [Fact]
     public void DismissWarning_HidesBannerAndResetsCount()
     {
         _session.RaiseWarning(SessionWarningKind.ConnectionClosed, "Bağlantı koptu");

@@ -8,4 +8,10 @@ public interface IUiDispatcher
 {
     /// <summary>Runs the action on the UI thread: inline when already there, otherwise queued.</summary>
     void Post(Action action);
+
+    /// <summary>
+    /// Queues the action on the UI thread behind input and rendering, so that a steady stream of
+    /// such work can never make the window stop responding. Used for high-volume updates (K14).
+    /// </summary>
+    void PostBackground(Action action);
 }

@@ -169,6 +169,44 @@ public sealed class ServerClientMessagingTests : IDisposable
     }
 
     [Fact]
+    public void BothSidesAutoReply_PingPongKeepsTheUiResponsive_AndTheToggleStopsIt()
+    {
+        // K4: with auto-reply on at both ends a single message starts an endless Mesaj 1 ↔ Mesaj 2
+        // loop at loopback speed. The loop is the specified behaviour; a frozen window is not.
+        var (server, client) = ConnectPair(serverAutoReply: true, clientAutoReply: true);
+
+        client.Driver.Message1.Open();
+        client.Driver.Message1.ClickSend();
+
+        server.Driver.WaitForTransmitCount(count => count >= 1000, ">= 1000");
+        Thread.Sleep(2000); // let the flood run long enough to starve a naive UI
+
+        Assert.True(server.IsResponding, "Server window stopped responding during the ping-pong.");
+        Assert.True(client.IsResponding, "Client window stopped responding during the ping-pong.");
+
+        // The user must be able to break the loop from the UI.
+        client.Driver.SetAutoReply(false);
+        server.Driver.SetAutoReply(false);
+        Assert.False(client.Driver.IsAutoReplyChecked);
+        Assert.False(server.Driver.IsAutoReplyChecked);
+
+        int settled = 0;
+        MainWindowDriver.WaitUntil(
+            () =>
+            {
+                int before = server.Driver.TransmitCount + server.Driver.ReceiveCount;
+                Thread.Sleep(500);
+                settled = server.Driver.TransmitCount + server.Driver.ReceiveCount;
+                return settled == before;
+            },
+            "the ping-pong to stop after switching auto-reply off");
+
+        Assert.True(settled >= 2000);
+        Assert.True(server.IsResponding);
+        Assert.True(client.IsResponding);
+    }
+
+    [Fact]
     public void ServerStop_ClientSeesDisconnectAndBothReturnToIdle()
     {
         var (server, client) = ConnectPair(serverAutoReply: true, clientAutoReply: false);

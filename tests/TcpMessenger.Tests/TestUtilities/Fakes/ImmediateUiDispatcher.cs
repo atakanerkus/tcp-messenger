@@ -12,4 +12,6 @@ internal sealed class ImmediateUiDispatcher : IUiDispatcher
         PostCount++;
         action();
     }
+
+    public void PostBackground(Action action) => Post(action);
 }

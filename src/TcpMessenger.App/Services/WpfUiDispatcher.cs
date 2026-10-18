@@ -28,4 +28,14 @@ public sealed class WpfUiDispatcher : IUiDispatcher
             _dispatcher.BeginInvoke(action, DispatcherPriority.Normal);
         }
     }
+
+    /// <inheritdoc />
+    public void PostBackground(Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        // Background ranks below Input and Render: the window keeps painting and taking clicks
+        // however much of this work is waiting.
+        _dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+    }
 }

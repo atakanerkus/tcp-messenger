@@ -97,6 +97,17 @@ internal sealed class MainWindowDriver
 
     public void ClickClearLog() => Find("ClearLogButton").AsButton().Invoke();
 
+    /// <summary>The status bar counter "Transmit:N", which counts every message, not only the rows still shown.</summary>
+    public int TransmitCount => ParseCounter(Find("TransmitCountText").Name);
+
+    public int ReceiveCount => ParseCounter(Find("ReceiveCountText").Name);
+
+    public void WaitForTransmitCount(Func<int, bool> condition, string description) =>
+        WaitUntil(() => condition(TransmitCount), $"transmit count {description} (now {TransmitCount})");
+
+    private static int ParseCounter(string text) =>
+        int.Parse(text[(text.IndexOf(':', StringComparison.Ordinal) + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture);
+
     // ---- detail pane -------------------------------------------------------------------------
 
     public string DetailHeader => Find("DetailHeader").Name;

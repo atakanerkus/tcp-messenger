@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TcpMessenger.App.Abstractions;
+using TcpMessenger.App.Services;
 using TcpMessenger.Core.Abstractions;
 using TcpMessenger.Core.Traffic;
 
@@ -20,12 +21,11 @@ public sealed partial class TrafficLogViewModel : ObservableObject
         _log = log;
         AutoScroll = true;
 
-        foreach (var entry in _log.Snapshot())
-        {
-            Append(entry);
-        }
+        AppendBatch(_log.Snapshot());
 
-        _log.EntryAdded += (_, entry) => dispatcher.Post(() => Append(entry));
+        // Batched, not one dispatcher post per entry: see UiBatcher and K14.
+        var incoming = new UiBatcher<TrafficEntry>(dispatcher, AppendBatch);
+        _log.EntryAdded += (_, entry) => incoming.Add(entry);
     }
 
     /// <summary>Rows, oldest first.</summary>
@@ -58,25 +58,48 @@ public sealed partial class TrafficLogViewModel : ObservableObject
         UndefinedCount = 0;
     }
 
-    private void Append(TrafficEntry entry)
+    private void AppendBatch(IReadOnlyList<TrafficEntry> batch)
     {
-        Entries.Add(new TrafficEntryViewModel(entry));
-        while (Entries.Count > _log.Capacity)
+        int transmits = 0, receives = 0, undefined = 0;
+        foreach (var entry in batch)
         {
-            Entries.RemoveAt(0);
+            if (entry.Kind == TrafficEntryKind.Undefined)
+            {
+                undefined++;
+            }
+            else if (entry.Direction == TrafficDirection.Transmit)
+            {
+                transmits++;
+            }
+            else
+            {
+                receives++;
+            }
         }
 
-        if (entry.Kind == TrafficEntryKind.Undefined)
+        TransmitCount += transmits;
+        ReceiveCount += receives;
+        UndefinedCount += undefined;
+
+        // Only the newest Capacity entries can end up on screen: skip older ones instead of adding
+        // and immediately removing them, so one flush touches at most twice Capacity rows.
+        int firstShown = Math.Max(0, batch.Count - _log.Capacity);
+        int overflow = Entries.Count + (batch.Count - firstShown) - _log.Capacity;
+        if (overflow > 0 && overflow >= Entries.Count)
         {
-            UndefinedCount++;
-        }
-        else if (entry.Direction == TrafficDirection.Transmit)
-        {
-            TransmitCount++;
+            Entries.Clear();
         }
         else
         {
-            ReceiveCount++;
+            for (int i = 0; i < overflow; i++)
+            {
+                Entries.RemoveAt(0);
+            }
+        }
+
+        for (int i = firstShown; i < batch.Count; i++)
+        {
+            Entries.Add(new TrafficEntryViewModel(batch[i]));
         }
     }
 }

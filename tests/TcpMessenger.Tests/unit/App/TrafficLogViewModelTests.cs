@@ -25,7 +25,57 @@ public sealed class TrafficLogViewModelTests
         Assert.Equal(1, vm.TransmitCount);
         Assert.Equal(1, vm.ReceiveCount);
         Assert.Equal(1, vm.UndefinedCount);
-        Assert.Equal(3, _dispatcher.PostCount);
+    }
+
+    [Fact]
+    public void Flood_WhileTheUiIsBusy_ArrivesAsOneBatchTrimmedToCapacity()
+    {
+        // The K4 ping-pong: thousands of entries before the UI thread gets to run once.
+        var busyUi = new ManualUiDispatcher();
+        var log = new TrafficLog(capacity: 100);
+        var vm = new TrafficLogViewModel(log, busyUi);
+
+        for (int i = 0; i < 10_000; i++)
+        {
+            var entry = i % 2 == 0
+                ? TrafficEntry.Transmitted(T0.AddMilliseconds(i), TestMessages.ValidMessage1(), new byte[64], [])
+                : TrafficEntry.Received(T0.AddMilliseconds(i), TestMessages.ValidMessage2(), new byte[29], []);
+            log.Add(entry);
+        }
+
+        Assert.Equal(1, busyUi.QueuedCount);
+        Assert.Empty(vm.Entries);
+
+        busyUi.RunAll();
+
+        Assert.Equal(100, vm.Entries.Count);
+        Assert.Equal("12:00:09.900", vm.Entries[0].Time); // the newest 100 of 10 000
+        Assert.Equal("12:00:09.999", vm.Entries[^1].Time);
+        Assert.Equal(5_000, vm.TransmitCount);
+        Assert.Equal(5_000, vm.ReceiveCount);
+    }
+
+    [Fact]
+    public void Batch_TrimsTheOldestRowsAlreadyOnScreen()
+    {
+        var busyUi = new ManualUiDispatcher();
+        var log = new TrafficLog(capacity: 5);
+        var vm = new TrafficLogViewModel(log, busyUi);
+        for (int i = 0; i < 4; i++)
+        {
+            log.Add(TrafficEntry.Transmitted(T0.AddSeconds(i), TestMessages.ValidMessage1(), new byte[64], []));
+        }
+
+        busyUi.RunAll();
+        for (int i = 4; i < 7; i++)
+        {
+            log.Add(TrafficEntry.Transmitted(T0.AddSeconds(i), TestMessages.ValidMessage1(), new byte[64], []));
+        }
+
+        busyUi.RunAll();
+
+        Assert.Equal(["12:00:02.000", "12:00:03.000", "12:00:04.000", "12:00:05.000", "12:00:06.000"], vm.Entries.Select(e => e.Time));
+        Assert.Equal(7, vm.TransmitCount);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using TcpMessenger.App.ViewModels;
 
 namespace TcpMessenger.App.Views;
@@ -9,6 +10,7 @@ namespace TcpMessenger.App.Views;
 public partial class TrafficLogView : UserControl
 {
     private TrafficLogViewModel? _viewModel;
+    private bool _scrollPending;
 
     public TrafficLogView()
     {
@@ -33,9 +35,22 @@ public partial class TrafficLogView : UserControl
 
     private void OnEntriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_viewModel is { AutoScroll: true } && e.Action == NotifyCollectionChangedAction.Add && e.NewItems is { Count: > 0 })
+        if (_viewModel is not { AutoScroll: true } || e.Action != NotifyCollectionChangedAction.Add || _scrollPending)
         {
-            EntriesList.ScrollIntoView(e.NewItems[^1]);
+            return;
+        }
+
+        // One scroll after a whole batch of rows, not a layout pass per row (K14).
+        _scrollPending = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, ScrollToNewest);
+    }
+
+    private void ScrollToNewest()
+    {
+        _scrollPending = false;
+        if (_viewModel is { AutoScroll: true, Entries.Count: > 0 } viewModel)
+        {
+            EntriesList.ScrollIntoView(viewModel.Entries[^1]);
         }
     }
 }

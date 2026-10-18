@@ -2,6 +2,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TcpMessenger.App.Abstractions;
+using TcpMessenger.App.Services;
 using TcpMessenger.Core.Abstractions;
 using TcpMessenger.Core.Scheduling;
 using TcpMessenger.Core.Session;
@@ -43,7 +44,9 @@ public sealed partial class MainViewModel : ObservableObject
         Detail = detail;
         AutoReplyEnabled = session.AutoReplyEnabled;
 
-        _session.WarningRaised += (_, warning) => _dispatcher.Post(() => ShowWarning(warning.Message));
+        // A flood of undefined bytes raises a warning per received chunk: batch them like the log (K14).
+        var warnings = new UiBatcher<SessionWarning>(dispatcher, batch => ShowWarnings(batch.Select(w => w.Message).ToList()));
+        _session.WarningRaised += (_, warning) => warnings.Add(warning);
         periodicSender.SendFailed += (_, failure) => _dispatcher.Post(() => OnPeriodicSendFailed(failure));
         TrafficLog.PropertyChanged += OnTrafficLogPropertyChanged;
         Connection.PropertyChanged += OnConnectionPropertyChanged;
@@ -86,9 +89,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnAutoReplyEnabledChanged(bool value) => _session.AutoReplyEnabled = value;
 
-    private void ShowWarning(string text)
+    /// <summary>Shows the newest warning and counts the rest, so the banner reads the same however they arrived.</summary>
+    private void ShowWarnings(IReadOnlyList<string> texts)
     {
-        WarningCount++;
+        WarningCount += texts.Count;
+        string text = texts[^1];
         WarningText = WarningCount > 1 ? $"{text}  (+{WarningCount - 1} önceki uyarı)" : text;
     }
 
@@ -96,7 +101,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var editor = failure.MessageId == MessageId.Message1 ? (MessageEditorViewModelBase)Message1 : Message2;
         editor.IsPeriodic = false;
-        ShowWarning($"{MessageId.GetName(failure.MessageId)} periyodik gönderimi durduruldu: {failure.Error.Message}");
+        ShowWarnings([$"{MessageId.GetName(failure.MessageId)} periyodik gönderimi durduruldu: {failure.Error.Message}"]);
     }
 
     private void OnTrafficLogPropertyChanged(object? sender, PropertyChangedEventArgs e)

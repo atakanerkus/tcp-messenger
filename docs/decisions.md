@@ -20,7 +20,7 @@ Görev tanımının açık bıraktığı ya da birden fazla şekilde yorumlanabi
 ## K4 — Otomatik cevap kullanıcı anahtarına bağlı (varsayılan açık)
 
 **Karar:** "Mesaj 1 gelirse Mesaj 2, Mesaj 2 gelirse Mesaj 1 gönder" davranışı arayüzdeki bir anahtarla açılıp kapatılır; varsayılan açıktır.
-**Gerekçe:** Gereksinim iki tarafta da aynen uygulanırsa tek bir mesaj sonsuz bir Mesaj 1 ↔ Mesaj 2 döngüsü başlatır (ping-pong). Tel üzerinde "bu bir cevaptır" bilgisi bulunmadığından döngü protokol seviyesinde kırılamaz. Bu, gereksinim analizinde tespit edilen bir boşluktur; demo sırasında anahtar yalnızca bir tarafta açık tutulur.
+**Gerekçe:** Gereksinim iki tarafta da aynen uygulanırsa tek bir mesaj sonsuz bir Mesaj 1 ↔ Mesaj 2 döngüsü başlatır (ping-pong). Tel üzerinde "bu bir cevaptır" bilgisi bulunmadığından döngü protokol seviyesinde kırılamaz. Bu, gereksinim analizinde tespit edilen bir boşluktur; demo sırasında anahtar yalnızca bir tarafta açık tutulur. İki tarafta da açılırsa döngü loopback hızında (saniyede binlerce mesaj) akar; arayüz cevap vermeye devam eder ve anahtar kapatılınca döngü durur (K14).
 
 ## K5 — Server tek aktif bağlantı kabul eder
 
@@ -66,3 +66,8 @@ Görev tanımının açık bıraktığı ya da birden fazla şekilde yorumlanabi
 
 **Karar:** Zamanlayıcı tikleri ve otomatik cevaplar gibi beklenmeyen (`await` edilmeyen) görevlerde her istisna yakalanır ve kullanıcıya uyarı olarak iletilir; periyodik gönderimde ilgili zamanlama durdurulur.
 **Gerekçe:** Gözlemlenmeyen bir görev istisnası sessizce kaybolur ya da süreci düşürür; canlı demoda ikisi de kabul edilemez. Senkron çağrı yollarında (ör. `SendAsync`) istisnalar normal şekilde yayılır ve komut katmanında gösterilir.
+
+## K14 — Ağ olayları arayüze toplu ve düşük öncelikle aktarılır
+
+**Karar:** Log kayıtları ve uyarılar arayüz thread'ine tek tek değil, toplu (`UiBatcher`) aktarılır. Aynı anda en fazla bir aktarım kuyrukta bekler ve bu aktarım girdi (fare/klavye) ile çizimden düşük öncelikte (`DispatcherPriority.Background`) çalışır. Kuyruktaki kayıt sayısı log kapasitesini aşarsa yalnızca en yeni 5000 kayıt listeye eklenir; sayaçlar yine tüm trafiği sayar. Otomatik kaydırma da toplu aktarım başına bir kez yapılır.
+**Gerekçe:** İlk sürüm her kaydı ayrı bir `Normal` öncelikli iş olarak gönderiyordu; `Normal` öncelik girdi ve çizimden yüksektir. İki tarafta otomatik cevap açıkken (K4) gelen saniyede binlerce mesaj kuyruğu arayüzün işleyebileceğinden hızlı doldurdu, pencere girdi alamadı ve dondu; kullanıcı döngüyü kıracak anahtara bile basamıyordu. Toplu aktarım arayüzün yükünü mesaj hızından bağımsız kılar; aynı koruma 10 ms periyotlu gönderim ve tanımsız byte seli için de geçerlidir.

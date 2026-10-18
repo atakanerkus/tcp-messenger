@@ -44,6 +44,19 @@ internal sealed class AppInstance : IDisposable
 
     public MainWindowDriver Driver { get; }
 
+    /// <summary>
+    /// Whether the window pumps messages: Windows' own "Not Responding" check (a message sent with a
+    /// timeout), independent of UI Automation.
+    /// </summary>
+    public bool IsResponding
+    {
+        get
+        {
+            using var process = Process.GetProcessById(_application.ProcessId);
+            return process.Responding;
+        }
+    }
+
     public static string ExePath => Path.Combine(AppContext.BaseDirectory, "TcpMessenger.App.exe");
 
     /// <summary>Starts the application with the form pre-filled; nothing is connected yet.</summary>

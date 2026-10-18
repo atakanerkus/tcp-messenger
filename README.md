@@ -25,8 +25,6 @@ TcpMessenger.App.exe --mode server --port 5000 --autoreply on
 TcpMessenger.App.exe --mode client --host 127.0.0.1 --port 5000 --autoreply off
 ```
 
-Visual Studio'da aynı ön ayarlar `Server` ve `Client` başlatma profilleri olarak hazırdır (`src/TcpMessenger.App/Properties/launchSettings.json`). Başlangıç projesi `TcpMessenger.App` iken araç çubuğundan **Server** seçilip **Ctrl+F5**, ardından **Client** seçilip yeniden **Ctrl+F5** ile iki pencere açılır.
-
 ## Mimari
 
 ```
@@ -55,15 +53,15 @@ Ayrıntılar: [docs/protocol.md](docs/protocol.md) (byte yerleşimleri), [docs/d
 tests/TcpMessenger.Tests/
 ├── unit/          Protocol (byte vektörleri, sınır değerleri, parçalı akış), Core (sahte bağlantı + FakeTimeProvider), App (ViewModel'ler)
 ├── integration/   gerçek loopback TCP: Transport, iki tam Core yığını (otomatik cevap, ping-pong, ham byte, periyodik)
-├── e2e/           FlaUI ile iki gerçek pencere: bağlan, gönder, otomatik cevap, detay + hex, tanımsız mesaj, periyodik, kopma
+├── e2e/           FlaUI ile iki gerçek pencere: bağlan, gönder, otomatik cevap, detay + hex, tanımsız mesaj, periyodik, iki taraflı ping-pong, kopma
 └── TestUtilities/ sahteler (FakeConnection, FakeMessengerSession, …) ve yardımcılar
 ```
 
 | Kategori | Adet | Komut | CI |
 |---|---:|---|---|
-| Unit | 206 | `dotnet test --filter Category=Unit` | ✔ |
+| Unit | 214 | `dotnet test --filter Category=Unit` | ✔ |
 | Integration | 25 | `dotnet test --filter Category=Integration` | ✔ |
-| E2E | 7 | `dotnet test --filter Category=E2E` | yalnızca lokal (etkileşimli masaüstü gerekir) |
+| E2E | 8 | `dotnet test --filter Category=E2E` | yalnızca lokal (etkileşimli masaüstü gerekir) |
 
 ## Derleme ve çalıştırma
 
