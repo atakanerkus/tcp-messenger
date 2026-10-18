@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Server": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode server --port 5000 --autoreply on"
+    },
+    "Client": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode client --host 127.0.0.1 --port 5000 --autoreply off"
+    },
+    "Boş form": {
+      "commandName": "Project"
+    }
+  }
+}

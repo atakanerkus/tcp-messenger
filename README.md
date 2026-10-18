@@ -25,6 +25,8 @@ TcpMessenger.App.exe --mode server --port 5000 --autoreply on
 TcpMessenger.App.exe --mode client --host 127.0.0.1 --port 5000 --autoreply off
 ```
 
+Visual Studio'da aynı ön ayarlar `Server` ve `Client` başlatma profilleri olarak hazırdır (`src/TcpMessenger.App/Properties/launchSettings.json`). Başlangıç projesi `TcpMessenger.App` iken araç çubuğundan **Server** seçilip **Ctrl+F5**, ardından **Client** seçilip yeniden **Ctrl+F5** ile iki pencere açılır.
+
 ## Mimari
 
 ```
