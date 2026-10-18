@@ -1,5 +1,11 @@
 {
   "profiles": {
+    "Server + Client": {
+      "commandName": "Executable",
+      "executablePath": "cmd.exe",
+      "commandLineArgs": "/c start \"\" TcpMessenger.App.exe --mode server --port 5000 --autoreply on & start \"\" TcpMessenger.App.exe --mode client --host 127.0.0.1 --port 5000 --autoreply off",
+      "workingDirectory": "$(TargetDir)"
+    },
     "Server": {
       "commandName": "Project",
       "commandLineArgs": "--mode server --port 5000 --autoreply on"

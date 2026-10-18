@@ -67,6 +67,19 @@ tests/TcpMessenger.Tests/
 
 Gereksinimler: .NET SDK 10.0, Windows 10/11.
 
+**Visual Studio:** `TcpMessenger.App` başlangıç projesiyken başlat düğmesinin yanındaki menüde dört profil vardır (`src/TcpMessenger.App/Properties/launchSettings.json`):
+
+| Profil | Ne yapar |
+|---|---|
+| Server + Client | İki pencereyi birlikte açar (server :5000, otomatik cevap açık · client → 127.0.0.1:5000, kapalı). Hata ayıklayıcı bağlanmaz; **Ctrl+F5** ile başlatın. |
+| Server | Tek server penceresi, F5 ile hata ayıklanabilir |
+| Client | Tek client penceresi, F5 ile hata ayıklanabilir |
+| Boş form | Argümansız; mod ve adres pencerede seçilir |
+
+İki pencereden birinde hata ayıklamak için: önce **Client** seçilip **Ctrl+F5**, ardından **Server** seçilip **F5**.
+
+Komut satırından:
+
 ```bash
 dotnet build TcpMessenger.slnx
 dotnet run --project src/TcpMessenger.App -- --mode server --port 5000
