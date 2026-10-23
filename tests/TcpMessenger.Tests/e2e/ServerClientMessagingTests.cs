@@ -122,6 +122,24 @@ public sealed class ServerClientMessagingTests : IDisposable
     }
 
     [Fact]
+    public void EmptyOrNonNumericValue_DisablesSendUntilCorrected()
+    {
+        // K15: an emptied box used to keep sending the previous value with Gönder still enabled.
+        var (_, client) = ConnectPair(serverAutoReply: false, clientAutoReply: false);
+
+        client.Driver.Message2.Open();
+        client.Driver.Message2.WaitForSendEnabled(true);
+        client.Driver.Message2.SetField("Altitude", "");
+        client.Driver.Message2.WaitForSendEnabled(false);
+
+        client.Driver.Message2.SetField("Altitude", "abc");
+        client.Driver.Message2.WaitForSendEnabled(false);
+
+        client.Driver.Message2.SetField("Altitude", "1500");
+        client.Driver.Message2.WaitForSendEnabled(true);
+    }
+
+    [Fact]
     public void UndefinedBytes_ShowWarningBannerAndUndefinedRow()
     {
         var server = LaunchServer(autoReply: true);

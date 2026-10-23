@@ -30,7 +30,7 @@
 
             <TextBlock Grid.Row="1" Text="Birlik Referans No" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="1" Grid.Column="1"
-                     Text="{Binding UnitReferenceNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding UnitReferenceNumber, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M2_UnitReferenceNumber" />
             <TextBlock Grid.Row="1" Grid.Column="2" Text="1 … 9999" Style="{StaticResource FieldHint}" />
 
@@ -44,19 +44,19 @@
 
             <TextBlock Grid.Row="3" Text="Enlem" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="3" Grid.Column="1"
-                     Text="{Binding Latitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding Latitude, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M2_Latitude" />
             <TextBlock Grid.Row="3" Grid.Column="2" Text="±32 400 000" Style="{StaticResource FieldHint}" />
 
             <TextBlock Grid.Row="4" Text="Boylam" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="4" Grid.Column="1"
-                     Text="{Binding Longitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding Longitude, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M2_Longitude" />
             <TextBlock Grid.Row="4" Grid.Column="2" Text="±64 800 000" Style="{StaticResource FieldHint}" />
 
             <TextBlock Grid.Row="5" Text="Yükseklik" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="5" Grid.Column="1"
-                     Text="{Binding Altitude, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding Altitude, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M2_Altitude" />
             <TextBlock Grid.Row="5" Grid.Column="2" Text="0 … 10 000" Style="{StaticResource FieldHint}" />
         </Grid>
@@ -83,7 +83,7 @@
                               IsChecked="{Binding IsPeriodic}"
                               AutomationProperties.AutomationId="M2_PeriodicCheckBox" />
                     <TextBox Width="70" Margin="8,0"
-                             Text="{Binding IntervalMs, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                             Text="{Binding IntervalMs, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="M2_IntervalMs" />
                     <TextBlock Text="ms'de bir gönder" VerticalAlignment="Center" />
                 </StackPanel>

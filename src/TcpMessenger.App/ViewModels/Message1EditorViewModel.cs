@@ -3,6 +3,7 @@ using TcpMessenger.App.Abstractions;
 using TcpMessenger.Core.Abstractions;
 using TcpMessenger.Protocol.Abstractions;
 using TcpMessenger.Protocol.Messages;
+using TcpMessenger.Protocol.Validation;
 
 namespace TcpMessenger.App.ViewModels;
 
@@ -12,9 +13,9 @@ public sealed partial class Message1EditorViewModel : MessageEditorViewModelBase
     public Message1EditorViewModel(IMessengerSession session, IPeriodicSender periodicSender, IMessageValidator validator, IUiDispatcher dispatcher)
         : base(session, periodicSender, validator, dispatcher, defaultIntervalMs: 100)
     {
-        UnitReferenceNumber = 1;
+        UnitReferenceNumber = "1";
         FirstName = "Ahmet";
-        UnitNo = 1;
+        UnitNo = "1";
         LastName = "Yılmaz";
         Rank = Rank.Lieutenant;
         Revalidate();
@@ -29,14 +30,16 @@ public sealed partial class Message1EditorViewModel : MessageEditorViewModelBase
     /// <summary>Choices for the Rütbe combo box.</summary>
     public IReadOnlyList<RankOption> RankOptions => RankOption.All;
 
+    /// <summary>Text as typed; parsed as <see cref="int"/>.</summary>
     [ObservableProperty]
-    public partial int UnitReferenceNumber { get; set; }
+    public partial string UnitReferenceNumber { get; set; }
 
     [ObservableProperty]
     public partial string FirstName { get; set; }
 
+    /// <summary>Text as typed; parsed as <see cref="uint"/>.</summary>
     [ObservableProperty]
-    public partial uint UnitNo { get; set; }
+    public partial string UnitNo { get; set; }
 
     [ObservableProperty]
     public partial string LastName { get; set; }
@@ -45,13 +48,24 @@ public sealed partial class Message1EditorViewModel : MessageEditorViewModelBase
     public partial Rank Rank { get; set; }
 
     /// <inheritdoc />
-    protected override IMessage BuildMessage() => new Message1(UnitReferenceNumber, FirstName ?? string.Empty, UnitNo, LastName ?? string.Empty, Rank);
+    protected override IMessage? BuildMessage(List<FieldError> errors)
+    {
+        int? unitReferenceNumber = ParseInteger<int>(UnitReferenceNumber, nameof(UnitReferenceNumber), errors);
+        uint? unitNo = ParseInteger<uint>(UnitNo, nameof(UnitNo), errors);
 
-    partial void OnUnitReferenceNumberChanged(int value) => Revalidate();
+        if (unitReferenceNumber is null || unitNo is null)
+        {
+            return null;
+        }
+
+        return new Message1(unitReferenceNumber.Value, FirstName ?? string.Empty, unitNo.Value, LastName ?? string.Empty, Rank);
+    }
+
+    partial void OnUnitReferenceNumberChanged(string value) => Revalidate();
 
     partial void OnFirstNameChanged(string value) => Revalidate();
 
-    partial void OnUnitNoChanged(uint value) => Revalidate();
+    partial void OnUnitNoChanged(string value) => Revalidate();
 
     partial void OnLastNameChanged(string value) => Revalidate();
 

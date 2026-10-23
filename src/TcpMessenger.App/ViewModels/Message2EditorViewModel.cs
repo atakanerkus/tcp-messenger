@@ -3,6 +3,7 @@ using TcpMessenger.App.Abstractions;
 using TcpMessenger.Core.Abstractions;
 using TcpMessenger.Protocol.Abstractions;
 using TcpMessenger.Protocol.Messages;
+using TcpMessenger.Protocol.Validation;
 
 namespace TcpMessenger.App.ViewModels;
 
@@ -12,11 +13,11 @@ public sealed partial class Message2EditorViewModel : MessageEditorViewModelBase
     public Message2EditorViewModel(IMessengerSession session, IPeriodicSender periodicSender, IMessageValidator validator, IUiDispatcher dispatcher)
         : base(session, periodicSender, validator, dispatcher, defaultIntervalMs: 500)
     {
-        UnitReferenceNumber = 1;
+        UnitReferenceNumber = "1";
         IsPositionValid = true;
-        Latitude = 14_373_180;  // Ankara, 39.9255° in 1/360000°
-        Longitude = 11_831_868; // Ankara, 32.8663° in 1/360000°
-        Altitude = 938;
+        Latitude = "14373180";  // Ankara, 39.9255° in 1/360000°
+        Longitude = "11831868"; // Ankara, 32.8663° in 1/360000°
+        Altitude = "938";
         Revalidate();
     }
 
@@ -26,37 +27,54 @@ public sealed partial class Message2EditorViewModel : MessageEditorViewModelBase
     /// <inheritdoc />
     public override string Title => Protocol.Messages.MessageId.GetName(MessageId);
 
+    /// <summary>Text as typed; parsed as <see cref="int"/>.</summary>
     [ObservableProperty]
-    public partial int UnitReferenceNumber { get; set; }
+    public partial string UnitReferenceNumber { get; set; }
 
     /// <summary>Bound to a check box; written to the wire as 1 or 0.</summary>
     [ObservableProperty]
     public partial bool IsPositionValid { get; set; }
 
+    /// <summary>Text as typed; parsed as <see cref="long"/>.</summary>
     [ObservableProperty]
-    public partial long Latitude { get; set; }
+    public partial string Latitude { get; set; }
 
+    /// <summary>Text as typed; parsed as <see cref="long"/>.</summary>
     [ObservableProperty]
-    public partial long Longitude { get; set; }
+    public partial string Longitude { get; set; }
 
+    /// <summary>Text as typed; parsed as <see cref="int"/>.</summary>
     [ObservableProperty]
-    public partial int Altitude { get; set; }
+    public partial string Altitude { get; set; }
 
     /// <inheritdoc />
-    protected override IMessage BuildMessage() => new Message2(
-        UnitReferenceNumber,
-        IsPositionValid ? Message2.PositionValid : Message2.PositionInvalid,
-        Latitude,
-        Longitude,
-        Altitude);
+    protected override IMessage? BuildMessage(List<FieldError> errors)
+    {
+        int? unitReferenceNumber = ParseInteger<int>(UnitReferenceNumber, nameof(UnitReferenceNumber), errors);
+        long? latitude = ParseInteger<long>(Latitude, nameof(Latitude), errors);
+        long? longitude = ParseInteger<long>(Longitude, nameof(Longitude), errors);
+        int? altitude = ParseInteger<int>(Altitude, nameof(Altitude), errors);
 
-    partial void OnUnitReferenceNumberChanged(int value) => Revalidate();
+        if (unitReferenceNumber is null || latitude is null || longitude is null || altitude is null)
+        {
+            return null;
+        }
+
+        return new Message2(
+            unitReferenceNumber.Value,
+            IsPositionValid ? Message2.PositionValid : Message2.PositionInvalid,
+            latitude.Value,
+            longitude.Value,
+            altitude.Value);
+    }
+
+    partial void OnUnitReferenceNumberChanged(string value) => Revalidate();
 
     partial void OnIsPositionValidChanged(bool value) => Revalidate();
 
-    partial void OnLatitudeChanged(long value) => Revalidate();
+    partial void OnLatitudeChanged(string value) => Revalidate();
 
-    partial void OnLongitudeChanged(long value) => Revalidate();
+    partial void OnLongitudeChanged(string value) => Revalidate();
 
-    partial void OnAltitudeChanged(int value) => Revalidate();
+    partial void OnAltitudeChanged(string value) => Revalidate();
 }

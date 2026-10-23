@@ -59,9 +59,9 @@ tests/TcpMessenger.Tests/
 
 | Kategori | Adet | Komut | CI |
 |---|---:|---|---|
-| Unit | 214 | `dotnet test --filter Category=Unit` | ✔ |
+| Unit | 233 | `dotnet test --filter Category=Unit` | ✔ |
 | Integration | 25 | `dotnet test --filter Category=Integration` | ✔ |
-| E2E | 8 | `dotnet test --filter Category=E2E` | yalnızca lokal (etkileşimli masaüstü gerekir) |
+| E2E | 9 | `dotnet test --filter Category=E2E` | yalnızca lokal (etkileşimli masaüstü gerekir) |
 
 ## Derleme ve çalıştırma
 

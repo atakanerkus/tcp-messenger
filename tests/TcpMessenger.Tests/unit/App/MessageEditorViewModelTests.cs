@@ -38,7 +38,7 @@ public sealed class MessageEditorViewModelTests
         var changed = new List<string?>();
         vm.ErrorsChanged += (_, e) => changed.Add(e.PropertyName);
 
-        vm.UnitReferenceNumber = 10_000;
+        vm.UnitReferenceNumber = "10000";
 
         Assert.True(vm.HasErrors);
         Assert.Null(vm.CurrentMessage);
@@ -51,11 +51,11 @@ public sealed class MessageEditorViewModelTests
     public void FixingTheField_ClearsTheErrorAndNotifies()
     {
         var vm = NewMessage1();
-        vm.UnitReferenceNumber = 10_000;
+        vm.UnitReferenceNumber = "10000";
         var changed = new List<string?>();
         vm.ErrorsChanged += (_, e) => changed.Add(e.PropertyName);
 
-        vm.UnitReferenceNumber = 9_999;
+        vm.UnitReferenceNumber = "9999";
 
         Assert.False(vm.HasErrors);
         Assert.Contains(nameof(Message1.UnitReferenceNumber), changed);
@@ -93,7 +93,7 @@ public sealed class MessageEditorViewModelTests
     {
         var vm = NewMessage2();
 
-        vm.Latitude = 32_400_001;
+        vm.Latitude = "32400001";
 
         Assert.True(vm.HasErrors);
         Assert.NotEmpty(vm.GetErrors(nameof(Message2.Latitude)));
@@ -104,12 +104,100 @@ public sealed class MessageEditorViewModelTests
     public void GetErrors_WithoutPropertyName_ReturnsAllErrors()
     {
         var vm = NewMessage2();
-        vm.Latitude = long.MaxValue;
-        vm.Altitude = -1;
+        vm.Latitude = "9223372036854775807";
+        vm.Altitude = "-1";
 
         var all = vm.GetErrors(null).Cast<string>().ToList();
 
         Assert.Equal(2, all.Count);
+    }
+
+    // ---- numeric text (K15) ------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(nameof(Message1.UnitReferenceNumber), "")]
+    [InlineData(nameof(Message1.UnitReferenceNumber), "   ")]
+    [InlineData(nameof(Message1.UnitReferenceNumber), "abc")]
+    [InlineData(nameof(Message1.UnitReferenceNumber), "12.5")]
+    [InlineData(nameof(Message1.UnitReferenceNumber), "2147483648")] // int.MaxValue + 1
+    [InlineData(nameof(Message1.UnitNo), "")]
+    [InlineData(nameof(Message1.UnitNo), "-1")]                      // uint has no sign
+    [InlineData(nameof(Message1.UnitNo), "4294967296")]              // uint.MaxValue + 1
+    public void Message1_NumericFieldThatIsNotANumber_BlocksSending(string field, string text)
+    {
+        var vm = NewMessage1();
+
+        SetText(vm, field, text);
+
+        Assert.True(vm.HasErrors);
+        Assert.NotEmpty(vm.GetErrors(field));
+        Assert.Null(vm.CurrentMessage);
+        Assert.False(vm.SendCommand.CanExecute(null));
+    }
+
+    [Theory]
+    [InlineData(nameof(Message2.UnitReferenceNumber))]
+    [InlineData(nameof(Message2.Latitude))]
+    [InlineData(nameof(Message2.Longitude))]
+    [InlineData(nameof(Message2.Altitude))]
+    public void Message2_EmptyNumericField_BlocksSending(string field)
+    {
+        var vm = NewMessage2();
+
+        SetText(vm, field, "");
+
+        Assert.Equal("Değer boş olamaz.", Assert.Single(vm.GetErrors(field).Cast<string>()));
+        Assert.Null(vm.CurrentMessage);
+        Assert.False(vm.SendCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void EmptiedField_DoesNotFallBackToThePreviousValue()
+    {
+        // The bug K15 fixes: WPF could not convert "" and left the old value in place, so it was sent.
+        var vm = NewMessage1();
+        vm.UnitReferenceNumber = "1234";
+
+        vm.UnitReferenceNumber = "";
+
+        Assert.Null(vm.CurrentMessage);
+    }
+
+    [Fact]
+    public void NumericText_TrimsSurroundingSpacesAndAcceptsASign()
+    {
+        var vm = NewMessage2();
+
+        vm.Latitude = " -32400000 ";
+
+        var message = Assert.IsType<Message2>(vm.CurrentMessage);
+        Assert.Equal(-32_400_000, message.Latitude);
+    }
+
+    [Fact]
+    public void RetypingAValidNumber_ClearsTheError()
+    {
+        var vm = NewMessage1();
+        vm.UnitNo = "abc";
+
+        vm.UnitNo = "42";
+
+        Assert.False(vm.HasErrors);
+        Assert.Equal(42u, Assert.IsType<Message1>(vm.CurrentMessage).UnitNo);
+    }
+
+    [Fact]
+    public void EmptyNames_AreAllowed()
+    {
+        // The task gives no minimum length; "" is 25 zero bytes on the wire.
+        var vm = NewMessage1();
+
+        vm.FirstName = "";
+        vm.LastName = "";
+
+        Assert.False(vm.HasErrors);
+        var message = Assert.IsType<Message1>(vm.CurrentMessage);
+        Assert.Equal("", message.FirstName);
     }
 
     // ---- send --------------------------------------------------------------------------------
@@ -151,7 +239,7 @@ public sealed class MessageEditorViewModelTests
     {
         var vm = NewMessage1();
         vm.FirstName = "Zeynep";
-        vm.UnitNo = 77;
+        vm.UnitNo = "77";
 
         await vm.SendCommand.ExecuteAsync(null);
 
@@ -177,15 +265,15 @@ public sealed class MessageEditorViewModelTests
     [Fact]
     public void DefaultIntervals_FollowTheTaskExample()
     {
-        Assert.Equal(100, NewMessage1().IntervalMs);
-        Assert.Equal(500, NewMessage2().IntervalMs);
+        Assert.Equal("100", NewMessage1().IntervalMs);
+        Assert.Equal("500", NewMessage2().IntervalMs);
     }
 
     [Fact]
     public void IsPeriodic_On_StartsScheduleWithCurrentInterval()
     {
         var vm = NewMessage1();
-        vm.IntervalMs = 250;
+        vm.IntervalMs = "250";
 
         vm.IsPeriodic = true;
 
@@ -211,7 +299,7 @@ public sealed class MessageEditorViewModelTests
         var vm = NewMessage2();
         vm.IsPeriodic = true;
 
-        vm.IntervalMs = 1000;
+        vm.IntervalMs = "1000";
 
         Assert.Equal(TimeSpan.FromSeconds(1), _periodic.IntervalOf(MessageId.Message2));
         Assert.Equal(2, _periodic.StartCalls.Count);
@@ -222,7 +310,7 @@ public sealed class MessageEditorViewModelTests
     {
         var vm = NewMessage1();
 
-        vm.IntervalMs = 5;
+        vm.IntervalMs = "5";
         vm.IsPeriodic = true;
 
         Assert.NotNull(vm.IntervalError);
@@ -234,10 +322,41 @@ public sealed class MessageEditorViewModelTests
     public void IntervalError_ClearsWhenIntervalBecomesValid()
     {
         var vm = NewMessage1();
-        vm.IntervalMs = 5;
+        vm.IntervalMs = "5";
 
-        vm.IntervalMs = 10;
+        vm.IntervalMs = "10";
 
         Assert.Null(vm.IntervalError);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("abc")]
+    public void IntervalThatIsNotANumber_RefusesToStart(string text)
+    {
+        var vm = NewMessage1();
+
+        vm.IntervalMs = text;
+        vm.IsPeriodic = true;
+
+        Assert.NotNull(vm.IntervalError);
+        Assert.False(vm.IsPeriodic);
+        Assert.Empty(_periodic.StartCalls);
+    }
+
+    [Fact]
+    public void IntervalEmptiedWhileRunning_KeepsTheLastValidPeriod()
+    {
+        var vm = NewMessage1();
+        vm.IsPeriodic = true;
+
+        vm.IntervalMs = "";
+
+        Assert.Equal("Değer boş olamaz.", vm.IntervalError);
+        Assert.True(_periodic.IsRunning(MessageId.Message1));
+        Assert.Equal(TimeSpan.FromMilliseconds(100), _periodic.IntervalOf(MessageId.Message1));
+    }
+
+    private static void SetText(object vm, string property, string text) =>
+        vm.GetType().GetProperty(property)!.SetValue(vm, text);
 }

@@ -30,7 +30,7 @@
 
             <TextBlock Grid.Row="1" Text="Birlik Referans No" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="1" Grid.Column="1"
-                     Text="{Binding UnitReferenceNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding UnitReferenceNumber, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M1_UnitReferenceNumber" />
             <TextBlock Grid.Row="1" Grid.Column="2" Text="−1000 … 9999" Style="{StaticResource FieldHint}" />
 
@@ -42,7 +42,7 @@
 
             <TextBlock Grid.Row="3" Text="Unit No" Style="{StaticResource FieldLabel}" />
             <TextBox Grid.Row="3" Grid.Column="1"
-                     Text="{Binding UnitNo, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                     Text="{Binding UnitNo, UpdateSourceTrigger=PropertyChanged}"
                      AutomationProperties.AutomationId="M1_UnitNo" />
             <TextBlock Grid.Row="3" Grid.Column="2" Text="uint32" Style="{StaticResource FieldHint}" />
 
@@ -84,7 +84,7 @@
                               IsChecked="{Binding IsPeriodic}"
                               AutomationProperties.AutomationId="M1_PeriodicCheckBox" />
                     <TextBox Width="70" Margin="8,0"
-                             Text="{Binding IntervalMs, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                             Text="{Binding IntervalMs, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="M1_IntervalMs" />
                     <TextBlock Text="ms'de bir gönder" VerticalAlignment="Center" />
                 </StackPanel>
