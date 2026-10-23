@@ -67,6 +67,8 @@ tests/TcpMessenger.Tests/
 
 Gereksinimler: .NET SDK 10.0, Windows 10/11.
 
+Terminal komutlarının tamamı (test filtreleri, kod kapsamı, iki pencereyi birlikte açma, tanımsız mesaj gönderme, sorun giderme) için: [RUN_DETAILS.md](RUN_DETAILS.md).
+
 **Visual Studio:** `TcpMessenger.App` başlangıç projesiyken başlat düğmesinin yanındaki menüde dört profil vardır (`src/TcpMessenger.App/Properties/launchSettings.json`):
 
 | Profil | Ne yapar |
@@ -97,6 +99,7 @@ dotnet publish src/TcpMessenger.App -c Release -r win-x64 --self-contained -p:Pu
 ```
 ├── .github/workflows/ci.yml    build + unit/integration (windows-latest)
 ├── docs/                       protokol, kararlar, demo senaryosu, ekran görüntüleri
+├── RUN_DETAILS.md              terminal komutları: derleme, test, çalıştırma, sorun giderme
 ├── src/                        Protocol · Transport · Core · App
 ├── tests/TcpMessenger.Tests/   unit/ · integration/ · e2e/ · TestUtilities/
 ├── Directory.Build.props       warnings-as-errors, analyzer'lar, build'de kod stili
